@@ -13,6 +13,8 @@ Adventure Game: Robot Repair (Unity Technologies), Unity 6.3, URP.
 • Юніт 1, More things to try: план рівня ([Docs/level-plan.png](Docs/level-plan.png)), стік геймпада в MoveAction
 • Юніт 2: рівень із тайлсетів, декорації й зона шкоди префабами, сортування за Y, Rigidbody 2D і колайдери, рух через MovePosition у FixedUpdate, колайдер тайлмапа
 • Юніт 2, More things to try: тайлмап переднього плану (арка поверх робота), 9-slicing будівлі
+• Юніт 3: здоров'я робота (maxHealth, ChangeHealth, невразливість), аптечки HealthCollectible, зона шкоди DamageZone з тригером
+• Юніт 3, More things to try: ultra damage zone (варіант префаба, damage = 2), slow healing zone
 
 ## Щоденник розробника
 
@@ -37,4 +39,16 @@ Adventure Game: Robot Repair (Unity Technologies), Unity 6.3, URP.
 **Що в рівні вийшло не так, як у плані, і чому:** за планом рівень мав 24 клітинки завширшки, а вийшло 36 — через ширший кадр камери. Арку планував з тайлів «верху стіни», а зробив цеглою, бо інакше її не видно. Аптечки й шкоду від DamageZone відклав до юніту 3: зараз у зони шкоди звичайний колайдер, і робот у неї впирається.
 
 **Що робитиму далі:** юніт 3 — здоров'я, аптечки й тригери; колайдер DamageZone стане тригером.
+
+### 07.10.2026 — Юніт 3: система здоров'я
+
+**Що зроблено:** у PlayerController додав public int maxHealth = 5, приватне currentHealth, властивість health лише для читання і функцію ChangeHealth з Mathf.Clamp і Debug.Log; швидкість винесена в public float speed = 3.0f. Аптечка: спрайт CollectibleHealth (Pixels Per Unit = 64), Box Collider 2D з Is Trigger, скрипт HealthCollectible — додає 1 і зникає, але лише коли health < maxHealth; префаб, три копії на рівні. Префаб DamageZone отримав Is Trigger, Auto Tiling і скрипт DamageZone з OnTriggerStay2D і ChangeHealth(-1). У Rigidbody 2D робота — Sleeping Mode = Never Sleep, після удару робот невразливий (timeInvincible, isInvincible, damageCooldown). More things to try: ultra damage zone — варіант префаба DamageZone з полем damage = 2 і червоним відтінком; slow healing zone — зелена зона, що додає 1 здоров'я раз на секунду, поки здоров'я не повне.
+
+**Що не вийшло або забрало найбільше часу:** спрайт аптечки має 256 × 256 пікселів, і з Pixels Per Unit = 64 вона стала завбільшки 4 клітинки — зменшив префаб через Scale 0.3. Debug.Log(move) з юніту 1 засипав Console щокадру, і рядків зі здоров'ям не було видно — прибрав його. Зона лікування спершу лікувала б миттєво до повного, бо невразливість стосується лише шкоди, тому додав їй власний таймер interval. Під час перевірки робот застряг у куті між двома декораціями — довелося обходити.
+
+**Що зрозумів про тригери, public і private:** звичайний колайдер фізично зупиняє робота, а тригер пропускає крізь себе і лише повідомляє скрипту про дотик (OnTriggerEnter2D — один раз на вході, OnTriggerStay2D — поки робот усередині). Never Sleep потрібен, бо Rigidbody, що стоїть на місці, засинає, і OnTriggerStay2D перестає викликатися — робот стояв би в зоні без шкоди. currentHealth лишив private, щоб його не міг змінити будь-хто; назовні — лише властивість health для читання, а змінювати здоров'я можна тільки через ChangeHealth, де працює Clamp і невразливість. public-поля (maxHealth, speed, timeInvincible, damage) видно в Inspector, і їх можна налаштовувати без коду.
+
+**Яке значення Time Invincible обрав і для якого гравця:** 1.5 с замість 2 з туторіалу. Розраховував на гравця-новачка: у звичайній зоні він втрачає 1 здоров'я раз на півтори секунди, тож з 5 очок має близько 7 секунд, щоб помітити шкоду в Console й вийти. Значення 2 здалося надто поблажливим, а 0.5 забирало все здоров'я майже миттєво.
+
+**Що робитиму далі:** юніт 4 — персонажі й взаємодія.
 
