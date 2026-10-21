@@ -16,6 +16,8 @@ public class PlayerController : MonoBehaviour
     Vector2 moveDirection = new Vector2(1, 0);
     public GameObject projectilePrefab;
     public InputAction LaunchAction;
+    public float launchCooldown = 0.5f;
+    float launchTimer;
     void Start()
     {
         MoveAction.Enable();
@@ -41,9 +43,11 @@ public class PlayerController : MonoBehaviour
             if (damageCooldown < 0)
                 isInvincible = false;
         }
-        if (LaunchAction.WasPressedThisFrame())
+        launchTimer -= Time.deltaTime;
+        if (LaunchAction.WasPressedThisFrame() && launchTimer <= 0)
         {
             Launch();
+            launchTimer = launchCooldown;
         }
     }
     void FixedUpdate()
