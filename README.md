@@ -15,6 +15,8 @@ Adventure Game: Robot Repair (Unity Technologies), Unity 6.3, URP.
 • Юніт 2, More things to try: тайлмап переднього плану (арка поверх робота), 9-slicing будівлі
 • Юніт 3: здоров'я робота (maxHealth, ChangeHealth, невразливість), аптечки HealthCollectible, зона шкоди DamageZone з тригером
 • Юніт 3, More things to try: ultra damage zone (варіант префаба, damage = 2), slow healing zone
+• Юніт 4: ворог GolemBoiler патрулює за таймером і шкодить на дотик, анімації ворога (Blend Tree) і робота, снаряд на клавішу C лагодить ворога, шари Character і Projectiles
+• Юніт 4, Спробувати більше: швидкий і повільний вороги, обмеження темпу пострілів
 
 ## Щоденник розробника
 
@@ -51,4 +53,18 @@ Adventure Game: Robot Repair (Unity Technologies), Unity 6.3, URP.
 **Яке значення Time Invincible обрав і для якого гравця:** 1.5 с замість 2 з туторіалу. Розраховував на гравця-новачка: у звичайній зоні він втрачає 1 здоров'я раз на півтори секунди, тож з 5 очок має близько 7 секунд, щоб помітити шкоду в Console й вийти. Значення 2 здалося надто поблажливим, а 0.5 забирало все здоров'я майже миттєво.
 
 **Що робитиму далі:** юніт 4 — персонажі й взаємодія.
+
+### 21.10.2026 — Юніт 4: вороги і снаряди
+
+**Що зроблено:** префаб Enemy (спрайт Enemy з набору Ducko, Pivot 0.5 / 0, Sprite Sort Point = Pivot, Box Collider 2D з Is Trigger, Rigidbody 2D з Gravity Scale = 0 і Freeze Rotation Z) і скрипт EnemyController: рух через MovePosition у FixedUpdate, public bool vertical, патруль за таймером (changeTime, timer, direction), шкода на дотик через OnTriggerEnter2D. На рівні два вороги: вертикальний ліворуч від зони шкоди й горизонтальний над озером. Анімація ворога: контролер Enemy, кліпи EnemyLeft і EnemyRight (Samples = 4, у EnemyRight — Flip X), Blend Tree 2D Simple Directional з Move X і Move Y. Робот отримав Animator з контролером Player, у PlayerController — moveDirection, SetFloat для Look X, Look Y, Speed і SetTrigger("Hit"). Снаряд Projectile (Pixels Per Unit = 300, Is Trigger, Gravity Scale = 0) зі скриптом на Awake і Launch через AddForce, постріл на C. Шари Character і Projectiles, їхню пару в Layer Collision Matrix вимкнено. Влучання викликає Fix(): ворог зупиняється (simulated = false) і грає EnemyFixed; снаряди далі 100 одиниць від центру прибираються. Спробувати більше: варіанти EnemyFast і EnemySlow, пауза 0.5 с між пострілами.
+
+**Що не вийшло або забрало найбільше часу:** аркуш PlayerCharacterSheet стояв на Pixels Per Unit = 200, і з Animator робот ставав удвічі меншим за свій звичайний спрайт — поставив 100, як радять для EnemySheet. Перший снаряд зникав одразу біля робота, поки не з'явились шари. Стрілу між Blend Tree і EnemyFixed треба було робити саме з Base Layer, а не всередині Blend Tree.
+
+**Що зрозумів про Animator, шари й Awake:** кліп — це кадри, а Animator Controller вирішує, котрий кліп грати; Blend Tree вибирає кліп за числами Move X і Move Y, які скрипт передає через SetFloat, а разові події (удар, постріл, полагодження) — через SetTrigger. Шари — фільтр колізій: снаряд народжується всередині колайдера робота, і без вимкненої пари Character × Projectiles рушій одразу повідомляв би про дотик. Awake викликається ще всередині Instantiate, а Start — уже після того, як PlayerController викличе Launch, тож у Start rigidbody2d на момент AddForce був би порожнім.
+
+**Які Speed і Change Time обрав і для якого гравця:** звичайні вороги — Speed = 1, Change Time = 3: маршрут 3 одиниці, ворог іде повільніше за робота (3 од./с), і новачок встигає обійти або прицілитися. Швидкий ворог — 2.5 × 1.2 (той самий маршрут ≈ 3 одиниці, але різкі розвороти) на цегляному майданчику, для гравця, що вже освоївся. Повільний — 0.6 × 5, його легко влучити, тож він стоїть біля краю рівня як «розминка».
+
+**Що робить мій снаряд з ворогом і як це пасує до моєї рамки:** снаряд не знищує ворога, а лагодить: зламана машина зупиняється, загоряється зеленим і більше не шкодить. Робот у грі — ремонтник, тож він не воює зі світом, а повертає його до ладу.
+
+**Що робитиму далі:** юніт 5 — NPC і перемога, коли полагоджено всіх ворогів.
 
