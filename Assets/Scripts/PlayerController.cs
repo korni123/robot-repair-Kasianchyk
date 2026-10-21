@@ -14,9 +14,12 @@ public class PlayerController : MonoBehaviour
     float damageCooldown;
     Animator animator;
     Vector2 moveDirection = new Vector2(1, 0);
+    public GameObject projectilePrefab;
+    public InputAction LaunchAction;
     void Start()
     {
         MoveAction.Enable();
+        LaunchAction.Enable();
         rigidbody2d = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         currentHealth = maxHealth;
@@ -38,6 +41,10 @@ public class PlayerController : MonoBehaviour
             if (damageCooldown < 0)
                 isInvincible = false;
         }
+        if (LaunchAction.WasPressedThisFrame())
+        {
+            Launch();
+        }
     }
     void FixedUpdate()
     {
@@ -56,5 +63,12 @@ public class PlayerController : MonoBehaviour
         }
         currentHealth = Mathf.Clamp(currentHealth + amount, 0, maxHealth);
         Debug.Log(currentHealth + "/" + maxHealth);
+    }
+    void Launch()
+    {
+        GameObject projectileObject = Instantiate(projectilePrefab, rigidbody2d.position + Vector2.up * 0.5f, Quaternion.identity);
+        Projectile projectile = projectileObject.GetComponent<Projectile>();
+        projectile.Launch(moveDirection, 300);
+        animator.SetTrigger("Launch");
     }
 }
